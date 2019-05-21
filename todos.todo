@@ -1,0 +1,44 @@
+api_methods:
+    ☐ setup(&Stream stream, int groote)
+    ☐ setup(&Stream stream, int groote, &Stream debug_output)
+    ☐ recieve_[datatype](String name, [datatype] default waarde)
+    ☐ send_[datatype]([datatype])
+        datatypes:
+            ☐ uint_8(byte)
+            ☐ int16_t
+            ☐ int32_t
+    ☐ update();
+
+stappen:
+    - vanuit sender verstuur je vars met namen
+    - deze gaan via de bluetooth naar de serial buffer van de ontvangende arudino
+    - deze word in de code uitgelezen
+    - in de library worden dan de hasmaps geupdate
+    - in de arudino code kunnen dan de haspmaps worden uitgelezen
+
+beschrijving protocol:
+    [headerbyte1][headerbyte2][msg_len][naam][| char][int as bytes]
+
+de api werkt als volgt
+
+//ontvanger
+
+setup{
+    transfer.setup(&Serial);
+    transfer.recieve_int("bla", 0);
+}
+
+loop{
+    transfer.update();
+    int bla = transfer.get_int("bla")
+}
+
+//sender
+
+setup{
+    transfer.setup(&Serial);
+}
+
+loop{
+    transfer.send_int("bla", 15)
+}

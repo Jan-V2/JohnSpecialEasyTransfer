@@ -17,7 +17,7 @@ stappen:
     - in de arudino code kunnen dan de haspmaps worden uitgelezen
 
 beschrijving protocol:
-    [headerbyte1][headerbyte2][msg_len][naam][| char][int as bytes]
+    [headerbyte1][headerbyte2][de len van het bericht na deze byte][type_marker][waarde als bytes][naam]
 
 de api werkt als volgt
 

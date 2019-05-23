@@ -142,7 +142,7 @@ void JohnsSpecialEasyTransfer::send_int(String name, int value)
 
 void JohnsSpecialEasyTransfer::send_bool(String name, bool value)
 {
-    init_send(sizeof(value));
+    init_send();
     uint8_t msg_len = name.length() + SIZE_BOOL + TYPE_MARKER_SIZE;
     _stream->write(msg_len);
     _stream->write(type_chars._bool);
@@ -310,7 +310,6 @@ void JohnsSpecialEasyTransfer::update()
                         println_int_debug("idx", idx);
                         // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
                         int val = recieved.val[0] | (int)recieved.val[0] << 8;
-                        bool val = (bool)map_uint8_t;
                         map_bool[idx](str_2_char(name), val);
                         println_string_debug(String("updated"));
                     }
@@ -378,7 +377,7 @@ void JohnsSpecialEasyTransfer::println_string_debug(String str)
         uint16_t b_length = str.length() +1;
         char buf[b_length];
         str.toCharArray(buf, b_length);
-        print_buffer(buf);
+        print_debug_buffer(buf);
     }
 
 
@@ -392,7 +391,7 @@ void JohnsSpecialEasyTransfer::println_int_debug(String name, int val)
         char buffer[b_size];
         name += ":%d\n";
         sprintf(buffer, str_2_char(name), val);
-        print_buffer(buffer);
+        print_debug_buffer(buffer);
 
     }
 }

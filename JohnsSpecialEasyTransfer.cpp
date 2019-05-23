@@ -125,12 +125,13 @@ void JohnsSpecialEasyTransfer::send_int(String name, int value)
 
 void JohnsSpecialEasyTransfer::send_bool(String name, bool value)
 {
-    uint8_t name_len = name.length();
-    uint8_t msg_len = name_len + SIZE_BOOL + TYPE_MARKER_SIZE;
+	init_send();
+    uint8_t name_len = 5;
+    uint8_t msg_len = name_len + 1 + 1;
     _stream->write(msg_len);
     _stream->write(type_chars._bool);
     _stream->write((uint8_t) value);
-
+	send_name(name);
 }
 
 void JohnsSpecialEasyTransfer::init_send()
@@ -141,30 +142,37 @@ void JohnsSpecialEasyTransfer::init_send()
 
 void JohnsSpecialEasyTransfer::send_name(String name)
 {
-    uint8_t name_len = name.length();
-    char buf[name_len];
-    name.toCharArray(buf, name_len);
+	// verstuurd de naam
+	// de +1 is omdat de strings null terminated zijn
+    int name_len = name.length();
+    char buf[name_len+1];
+    name.toCharArray(buf, name_len+1);
     for (int i=0; i < name_len; i++)
     {
         _stream->write(buf[i]);
     }
 }
 
+
+
 /*
- * Comment
+ * int failed_transfers = 0;
+		int trashed_bytes = 0;
+		int wrong_type = 0;
  */
 // todo is naam index nodig?
 // is data length niet genoeg
 void JohnsSpecialEasyTransfer::update()
 {
     // deze methode leest de bytes 1 voor 1 uit de serial buffer.
-    if (_stream->available() > 3)   // er is een rede voor de >3 want de andere lib deed het.
+    while (_stream->available() > 3)   // er is een rede voor de >3 want de andere lib deed het.
     {
         if (transfer_phase ==  READING_HEADER1)
         {
             if(_stream->read() == HEADER_1)
             {
                 // als header byte gevonden next phase
+                println_string_debug(String("header1"));
                 transfer_phase = READING_HEADER2;
             }
             else
@@ -179,6 +187,7 @@ void JohnsSpecialEasyTransfer::update()
             if(_stream->read() == HEADER_2)
             {
                 // als header byte gevonden next phase
+                println_string_debug(String("header2"));
                 transfer_phase = READING_LEN;
             }
             else
@@ -191,6 +200,7 @@ void JohnsSpecialEasyTransfer::update()
         else if (transfer_phase ==  READING_LEN)
         {
             // neemt de byte als len en gaat naar de volgende phase
+            println_string_debug(String("len"));
             recieved.data_len = _stream->read();
             transfer_phase =  READING_TYPE;
         }
@@ -201,6 +211,7 @@ void JohnsSpecialEasyTransfer::update()
                 // pakt de eerstvolgede byte als het type.
                 // als de byte niet van een type is word de transfer als failed verklaard;
                 // als de byte valide is word de size ervan gepakt.
+                println_string_debug(String("type"));
                 char type = (char)_stream->read();
                 if (type == type_chars._uint8 || type == type_chars._int || type == type_chars._bool)
                 {
@@ -211,7 +222,7 @@ void JohnsSpecialEasyTransfer::update()
                     }
                     else if(type == type_chars._uint8)
                     {
-                        recieved.type_len = SIZE_UINT8_T
+                        recieved.type_len = SIZE_UINT8_T;
                     }
                     else if(type == type_chars._bool)
                     {
@@ -230,6 +241,7 @@ void JohnsSpecialEasyTransfer::update()
             else if (transfer_phase ==  READING_VAL)
             {
                 // leest de waarde uit de byte stream
+                println_string_debug(String("val"));
                 recieved.val[recieved.val_idx] = _stream->available();
                 if(recieved.val_idx < recieved.type_len - 1)
                 {
@@ -246,6 +258,7 @@ void JohnsSpecialEasyTransfer::update()
             else if (transfer_phase ==  READING_NAME)
             {
                 // leest de naam uit de byte stream
+                println_string_debug(String("name"));
                 recieved.name_buf[recieved.name_idx] = _stream->available();
                 recieved.name_idx++;
                 recieved.data_idx++;
@@ -258,6 +271,7 @@ void JohnsSpecialEasyTransfer::update()
         else if (transfer_phase ==  TRANSFER_FAILED)
         {
             // als de transfer mislukt
+            println_string_debug(String("failed"));
             debug.failed_transfers++;
             recieved.data_idx = 0;
             transfer_phase = READING_HEADER1;
@@ -266,6 +280,8 @@ void JohnsSpecialEasyTransfer::update()
         {
             if (transfer_phase == READING_NAME)
             {
+				println_string_debug(String("success"));
+				
                 // sucsess update hashmaps
                 // hier word de data naar het juiste type gecast
                 String name = "";
@@ -280,17 +296,19 @@ void JohnsSpecialEasyTransfer::update()
                 }
                 else if(recieved.type_char == type_chars._uint8)
                 {
-					int idx = map_bool.getIndexOf(str_2_char(name));
-                    if(idx != NULL)
+					
+                }
+                else if(recieved.type_char == type_chars._bool)
+                {
+                    int idx = map_bool.getIndexOf(str_2_char(name));
+                    println_int_debug("idx", idx);
+                    if(idx > -1)
                     {
 						bool val = (bool)recieved.val[0];
 						map_bool[idx](str_2_char(name), val);
 					}
                 }
-                else if(recieved.type_char == type_chars._bool)
-                {
-                    recieved.type_len = SIZE_BOOL;
-                }
+                transfer_phase = READING_HEADER1;
             }
             else
             {
@@ -304,8 +322,39 @@ void JohnsSpecialEasyTransfer::update()
     }
 }
 
+/*
+ * debug print functies.
+ */
+void JohnsSpecialEasyTransfer::print_debug(){
+	println_int_debug("phase", (uint8_t)transfer_phase);
+	println_int_debug("failed transfers", debug.failed_transfers);
+	println_int_debug("trashed bytes", debug.trashed_bytes);
+	println_int_debug("wrong_type", debug.wrong_type);
+}
 
+void JohnsSpecialEasyTransfer::println_string_debug(String str){
+	str += "\n";
+	uint16_t b_length = str.length() +1;
+	char buf[b_length];
+	str.toCharArray(buf, b_length);
+	print_buffer(buf);
+}
 
+void JohnsSpecialEasyTransfer::println_int_debug(String name, int val){
+	int b_size = name.length() + 10;
+	char buffer[b_size];
+	name += ":%d\n";
+	sprintf(buffer, str_2_char(name) , val);
+	print_buffer(buffer);
+}
+void JohnsSpecialEasyTransfer::print_buffer(char buffer[]){
+	int i = 0;
+	char c = buffer[4];
+	while(buffer[i] > 0){
+		debug_stream->write(buffer[i]);
+		i++;
+	}
+}
 
 /*
  * convert aruduino string naar char*

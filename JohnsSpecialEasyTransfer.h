@@ -21,10 +21,11 @@
 //#include <avr/io.h>
 
 
-#define SIZE_UINT8_T  1;
-#define SIZE_INT  2;
-#define SIZE_BOOL  1;
-#define TYPE_MARKER_SIZE 1;
+
+const int SIZE_UINT8_T = 1;
+const int SIZE_INT = 2;
+const int SIZE_BOOL = 1;
+const int TYPE_MARKER_SIZE = 1;
 
 // buffer_size bepaald de maximale lengte van commandos
 const int buffer_size = 16;
@@ -48,7 +49,6 @@ enum Transfer_Phase {
 class JohnsSpecialEasyTransfer {
 public:
 	JohnsSpecialEasyTransfer(){}
-
     void begin(Stream *stream, uint8_t uint8_size, uint8_t int_size, uint8_t bool_size, Stream *debug_out = NULL);
 
     // met deze methods voeg je vars toe aan de hasmaps
@@ -67,9 +67,16 @@ public:
     void send_int(String name, int value);
     void send_bool(String name, bool);
 
-
     // leest de serial uit en update de waardes
     void update();
+    
+     struct{
+		int failed_transfers = 0;
+		int trashed_bytes = 0;
+		int wrong_type = 0;
+	} debug;
+	
+	void print_debug();
 
 private:
     Stream *_stream;
@@ -108,6 +115,9 @@ private:
 	void init_send();
 	
 	char* str_2_char(String str);
+	void println_int_debug(String name, int val);
+	void println_string_debug(String str);
+	void print_buffer(char buffer[]);
 	
 	struct {
 		uint8_t data_len;
@@ -126,14 +136,6 @@ private:
         char _bool = 'b';
         char _int = 'i';
     } type_chars;
-    
-    struct{
-		int failed_transfers = 0;
-		int trashed_bytes = 0;
-		int wrong_type = 0;
-	} debug;
-	
-	
 };
 
 

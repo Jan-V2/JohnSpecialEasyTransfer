@@ -18,7 +18,7 @@ stappen:
 
 beschrijving protocol:
     [headerbyte1][headerbyte2][de len van het bericht na deze byte][type_marker][waarde als bytes][naam]
-
+2+1+1+1+7
 de api werkt als volgt
 
 //ontvanger

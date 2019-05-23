@@ -111,27 +111,43 @@ bool JohnsSpecialEasyTransfer::get_bool(String name)
 
 
 /*
- * Comment
+ * deze methodes versturen de waardes over de serial.
+ * het zou mooi zijn als dit gerefactored zou kunnen worden zodat
+ * het gernerics gebruikt in plaats van de types te hardcoden.
+ * het probleem is dat de ontvanger het ook moet kunnen snappen,
+ * de type chars moeten zowiezo gehardcode worden, want als dat niet matcht
+ * snapt de parser het aan de andere kant niet.
+ * dit zou ik natuurlijk kunnen veranderen, maar dat zou ontstettend veel
+ * werk zijn, en is in dit geval niet nodig.
  */
 void JohnsSpecialEasyTransfer::send_uint8(String name, uint8_t value)
 {
-
+    init_send();
+    uint8_t msg_len = name.length() + SIZE_UINT8_T + TYPE_MARKER_SIZE;
+    _stream->write(msg_len);
+    _stream->write(type_chars._uint8);
+    _stream->write(value);
+    send_name(name);
 }
 
 void JohnsSpecialEasyTransfer::send_int(String name, int value)
 {
-
+    init_send();
+    uint8_t msg_len = name.length() + SIZE_INT + TYPE_MARKER_SIZE;
+    _stream->write(msg_len);
+    _stream->write(type_chars._int);
+    _stream->write(value);
+    send_name(name);
 }
 
 void JohnsSpecialEasyTransfer::send_bool(String name, bool value)
 {
-	init_send();
-    uint8_t name_len = 5;
-    uint8_t msg_len = name_len + 1 + 1;
+    init_send(sizeof(value));
+    uint8_t msg_len = name.length() + SIZE_BOOL + TYPE_MARKER_SIZE;
     _stream->write(msg_len);
     _stream->write(type_chars._bool);
     _stream->write((uint8_t) value);
-	send_name(name);
+    send_name(name);
 }
 
 void JohnsSpecialEasyTransfer::init_send()
@@ -142,8 +158,8 @@ void JohnsSpecialEasyTransfer::init_send()
 
 void JohnsSpecialEasyTransfer::send_name(String name)
 {
-	// verstuurd de naam
-	// de +1 is omdat de strings null terminated zijn
+    // verstuurd de naam
+    // de +1 is omdat de strings null terminated zijn
     int name_len = name.length();
     char buf[name_len+1];
     name.toCharArray(buf, name_len+1);
@@ -155,11 +171,7 @@ void JohnsSpecialEasyTransfer::send_name(String name)
 
 
 
-/*
- * int failed_transfers = 0;
-		int trashed_bytes = 0;
-		int wrong_type = 0;
- */
+
 // todo is naam index nodig?
 // is data length niet genoeg
 void JohnsSpecialEasyTransfer::update()
@@ -280,8 +292,8 @@ void JohnsSpecialEasyTransfer::update()
         {
             if (transfer_phase == READING_NAME)
             {
-				println_string_debug(String("success"));
-				
+                println_string_debug(String("success"));
+
                 // sucsess update hashmaps
                 // hier word de data naar het juiste type gecast
                 String name = "";
@@ -292,68 +304,110 @@ void JohnsSpecialEasyTransfer::update()
 
                 if(recieved.type_char == type_chars._int)
                 {
-
+                    int idx = map_bool.getIndexOf(str_2_char(name));
+                    if(idx < 255)
+                    {
+                        println_int_debug("idx", idx);
+                        // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
+                        int val = recieved.val[0] | (int)recieved.val[0] << 8;
+                        bool val = (bool)map_uint8_t;
+                        map_bool[idx](str_2_char(name), val);
+                        println_string_debug(String("updated"));
+                    }
+                    else
+                    {
+                        println_string_debug(String("no update"));
+                    }
                 }
                 else if(recieved.type_char == type_chars._uint8)
                 {
-					
+                    int idx = map_uint8_t.getIndexOf(str_2_char(name));
+                    if(idx < 255)
+                    {
+                        println_int_debug("idx", idx);
+                        map_bool[idx](str_2_char(name), recieved.val[0]);
+                        println_string_debug(String("updated"));
+                    }
+                    else
+                    {
+                        println_string_debug(String("no update"));
+                    }
                 }
                 else if(recieved.type_char == type_chars._bool)
                 {
                     int idx = map_bool.getIndexOf(str_2_char(name));
-                    println_int_debug("idx", idx);
-                    if(idx > -1)
+                    if(idx < 255)
                     {
-						bool val = (bool)recieved.val[0];
-						map_bool[idx](str_2_char(name), val);
-					}
+                        println_int_debug("idx", idx);
+                        bool val = (bool)recieved.val[0];
+                        map_bool[idx](str_2_char(name), val);
+                        println_string_debug(String("updated"));
+                    }
+                    else
+                    {
+                        println_string_debug(String("no update"));
+                    }
                 }
                 transfer_phase = READING_HEADER1;
             }
             else
             {
-                // failed: aan het einde van bericht voordat de naam is uitgelezen.
+				println_string_debug(String("failed: at end of msg before name is read"));
+				transfer_phase = TRANSFER_FAILED;
             }
-		
         }
-
-	
-
     }
 }
 
 /*
  * debug print functies.
  */
-void JohnsSpecialEasyTransfer::print_debug(){
-	println_int_debug("phase", (uint8_t)transfer_phase);
-	println_int_debug("failed transfers", debug.failed_transfers);
-	println_int_debug("trashed bytes", debug.trashed_bytes);
-	println_int_debug("wrong_type", debug.wrong_type);
+void JohnsSpecialEasyTransfer::print_debug()
+{
+    println_int_debug("phase", (uint8_t)transfer_phase);
+    println_int_debug("failed transfers", debug.failed_transfers);
+    println_int_debug("trashed bytes", debug.trashed_bytes);
+    println_int_debug("wrong_type", debug.wrong_type);
 }
 
-void JohnsSpecialEasyTransfer::println_string_debug(String str){
-	str += "\n";
-	uint16_t b_length = str.length() +1;
-	char buf[b_length];
-	str.toCharArray(buf, b_length);
-	print_buffer(buf);
+void JohnsSpecialEasyTransfer::println_string_debug(String str)
+{
+    if (debug_enabled)
+    {
+        str += "\n";
+        uint16_t b_length = str.length() +1;
+        char buf[b_length];
+        str.toCharArray(buf, b_length);
+        print_buffer(buf);
+    }
+
+
 }
 
-void JohnsSpecialEasyTransfer::println_int_debug(String name, int val){
-	int b_size = name.length() + 10;
-	char buffer[b_size];
-	name += ":%d\n";
-	sprintf(buffer, str_2_char(name) , val);
-	print_buffer(buffer);
+void JohnsSpecialEasyTransfer::println_int_debug(String name, int val)
+{
+    if (debug_enabled)
+    {
+        int b_size = name.length() + 10;
+        char buffer[b_size];
+        name += ":%d\n";
+        sprintf(buffer, str_2_char(name), val);
+        print_buffer(buffer);
+
+    }
 }
-void JohnsSpecialEasyTransfer::print_buffer(char buffer[]){
-	int i = 0;
-	char c = buffer[4];
-	while(buffer[i] > 0){
-		debug_stream->write(buffer[i]);
-		i++;
-	}
+void JohnsSpecialEasyTransfer::print_debug_buffer(char buffer[])
+{
+    if (debug_enabled)
+    {
+        int i = 0;
+        char c = buffer[4];
+        while(buffer[i] > 0)
+        {
+            debug_stream->write(buffer[i]);
+            i++;
+        }
+    }
 }
 
 /*

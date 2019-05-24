@@ -14,6 +14,11 @@
 #endif
 #include "Stream.h"
 #include <HashMap.h>
+#include "MiniDict.h"
+#include "MiniDictBool.h"
+#include "MiniDictInt.h"
+#include "MiniDictUint8.h"
+
 //#include <NewSoftSerial.h>
 //#include <math.h>
 //#include <stdio.h>
@@ -58,7 +63,7 @@ public:
     // true if success false if geen ruimte meer
     bool add_recieve_uint8(String name, uint8_t default_value = 0);
     bool add_recieve_int(String name, int default_value = 0);
-    bool add_recieve_bool(String name, bool default_value = false);
+    void add_recieve_bool(String name, bool default_value = false);
 
     // om waardes uit de maps te halen null als waarde niet in de maps zit
     uint8_t get_uint8(String name);
@@ -81,6 +86,7 @@ public:
     } debug;
 
     void print_debug();
+    void debug_maps();
 
 private:
     Stream *_stream;
@@ -88,26 +94,11 @@ private:
     bool has_debug;
     bool did_init;
 
-    // de ruwe hastypes. worden alleen gebruikt on naar de maps te passen.
-    // het zijn hier vars om memoryleaks te voorkomen.
-    HashType<char*,uint8_t> hash_array_raw_uint8_t[];
-    HashType<char*,int> hash_array_raw_int[];
-    HashType<char*,bool> hash_array_raw_bool[];
-
     // de daadwerkelijke maps
-    HashMap<char*,uint8_t> map_uint8_t;
-    HashMap<char*,int> map_int;
-    HashMap<char*,bool> map_bool;
+    MiniDictUint8 map_uint8_t;
+    MiniDictInt map_int;
+    MiniDictBool map_bool;
 
-    // het aantal nog vrije plekken in de hashmaps
-    uint8_t uint8_t_remaining;
-    uint8_t	int_remaining;
-    uint8_t bool_remaining;
-
-    // de huidige schijfindex van de hashmaps
-    uint8_t uint8_t_idx = 0;
-    uint8_t	int_idx = 0;
-    uint8_t bool_idx = 0;
 
     Transfer_Phase transfer_phase = READING_HEADER1;
 

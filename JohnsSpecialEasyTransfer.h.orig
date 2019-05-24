@@ -37,19 +37,21 @@ const uint8_t NAME_MAX_LEN = 32;
 
 const bool debug_enabled = true;
 
-enum Transfer_Phase {
-	TRANSFER_FAILED,
-	READING_HEADER1,
-	READING_HEADER2,
-	READING_LEN,
-	READING_TYPE,
-	READING_VAL,
-	READING_NAME,
+enum Transfer_Phase
+{
+    TRANSFER_FAILED,
+    READING_HEADER1,
+    READING_HEADER2,
+    READING_LEN,
+    READING_TYPE,
+    READING_VAL,
+    READING_NAME,
 };
 
-class JohnsSpecialEasyTransfer {
+class JohnsSpecialEasyTransfer
+{
 public:
-	JohnsSpecialEasyTransfer(){}
+    JohnsSpecialEasyTransfer() {}
     void begin(Stream *stream, uint8_t uint8_size, uint8_t int_size, uint8_t bool_size, Stream *debug_out = NULL);
 
     // met deze methods voeg je vars toe aan de hasmaps
@@ -70,14 +72,16 @@ public:
 
     // leest de serial uit en update de waardes
     void update();
-    
-     struct{
-		int failed_transfers = 0;
-		int trashed_bytes = 0;
-		int wrong_type = 0;
-	} debug;
-	
-	void print_debug();
+
+    struct
+    {
+        int failed_transfers = 0;
+        int trashed_bytes = 0;
+        int wrong_type = 0;
+    } debug;
+
+    void print_debug();
+    void debug_maps();
 
 private:
     Stream *_stream;
@@ -95,44 +99,48 @@ private:
     HashMap<char*,uint8_t> map_uint8_t;
     HashMap<char*,int> map_int;
     HashMap<char*,bool> map_bool;
-	
+    
+    String bool_hashstore[];
+
     // het aantal nog vrije plekken in de hashmaps
     uint8_t uint8_t_remaining;
     uint8_t	int_remaining;
     uint8_t bool_remaining;
-	
-	// de huidige schijfindex van de hashmaps 
+
+    // de huidige schijfindex van de hashmaps
     uint8_t uint8_t_idx = 0;
     uint8_t	int_idx = 0;
     uint8_t bool_idx = 0;
-    
+
     Transfer_Phase transfer_phase = READING_HEADER1;
-	
+
 
     // buffer_size bepaald de maximale lengte van commandos
     uint8_t buffer[buffer_size];
-    
+
     void send_name(String name);
-	void init_send();
-	
-	char* str_2_char(String str);
-	void println_int_debug(String name, int val);
-	void println_string_debug(String str);
-	void print_debug_buffer(char buffer[]);
-	
-	struct {
-		uint8_t data_len;
-		uint8_t type_len;
-		uint8_t name_len;
-		uint8_t name_idx = 0;
-		uint8_t data_idx = 0;
-		uint8_t val_idx = 0;
-		uint8_t val[2];
-		char type_char;
-		char name_buf[NAME_MAX_LEN];
-	}recieved;
-	
-    struct {
+    void init_send();
+
+    char* str_2_char(String str);
+    void println_int_debug(String name, int val);
+    void println_string_debug(String str);
+    void print_debug_buffer(char buffer[]);
+
+    struct
+    {
+        uint8_t data_len;
+        uint8_t type_len;
+        uint8_t name_len;
+        uint8_t name_idx = 0;
+        uint8_t data_idx = 0;
+        uint8_t val_idx = 0;
+        uint8_t val[2];
+        char type_char;
+        char name_buf[NAME_MAX_LEN];
+    } recieved;
+
+    struct
+    {
         char _uint8 = 'u';
         char _bool = 'b';
         char _int = 'i';

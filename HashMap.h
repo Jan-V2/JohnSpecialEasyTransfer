@@ -50,7 +50,7 @@ public:
 
     void reset()
     {
-        hashCode = 0;
+        hashCode = "";
         mappedValue = 0;
     }
     hash getHash()

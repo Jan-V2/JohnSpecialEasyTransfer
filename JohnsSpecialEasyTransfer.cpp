@@ -20,17 +20,10 @@ void JohnsSpecialEasyTransfer::begin(Stream *stream, uint8_t uint8_size, uint8_t
         }
 
         _stream = stream;
-        hash_array_raw_uint8_t[uint8_size];
-        hash_array_raw_int[int_size];
-        hash_array_raw_bool[bool_size];
 
-        map_uint8_t = HashMap<char*,uint8_t>( hash_array_raw_uint8_t, uint8_size );
-        map_int = HashMap<char*,int>( hash_array_raw_int, int_size );
-        map_bool = HashMap<char*,bool>( hash_array_raw_bool, bool_size );
-
-        uint8_t_remaining = uint8_size;
-        int_remaining = int_size;
-        bool_remaining = bool_size;
+        map_uint8_t = MiniDictUint8( uint8_size );
+        map_int = MiniDictInt(  int_size );
+        map_bool = MiniDictBool( );
 
         did_init = true;
     }
@@ -44,11 +37,10 @@ void JohnsSpecialEasyTransfer::begin(Stream *stream, uint8_t uint8_size, uint8_t
  */
 bool JohnsSpecialEasyTransfer::add_recieve_uint8(String name, uint8_t default_value = 0)
 {
-    if(uint8_t_remaining > 0)
+    if(map_uint8_t.spots_remaining() > 0)
     {
-        map_uint8_t[uint8_t_idx](str_2_char(name), default_value);
-        uint8_t_idx++;
-        uint8_t_remaining--;
+        map_uint8_t.add(name, default_value);
+
         return true;
     }
     else
@@ -61,11 +53,9 @@ bool JohnsSpecialEasyTransfer::add_recieve_uint8(String name, uint8_t default_va
 
 bool JohnsSpecialEasyTransfer::add_recieve_int(String name, int default_value = 0)
 {
-    if(int_remaining > 0)
+    if(map_int.spots_remaining() > 0)
     {
-        map_int[int_idx](str_2_char(name), default_value);
-        int_idx++;
-        int_remaining--;
+        map_int.add(name, default_value);
         return true;
     }
     else
@@ -74,19 +64,14 @@ bool JohnsSpecialEasyTransfer::add_recieve_int(String name, int default_value = 
     }
 }
 
-bool JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value = false)
+void JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value = false)
 {
-    if(bool_remaining > 0)
+	println_int_debug("bulubby", map_bool.spots_remaining());
+    if(map_bool.spots_remaining() > 0)
     {
-        map_bool[bool_idx](str_2_char(name), default_value);
-        bool_idx++;
-        bool_remaining--;
-        return true;
+        map_bool.add(name, default_value);
     }
-    else
-    {
-        return false;
-    }
+
 }
 
 
@@ -96,17 +81,17 @@ bool JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value 
  */
 uint8_t JohnsSpecialEasyTransfer::get_uint8(String name)
 {
-    return map_uint8_t.getValueOf(str_2_char(name));
+    return map_uint8_t.get(name);
 }
 
 int JohnsSpecialEasyTransfer::get_int(String name)
 {
-    return map_int.getValueOf(str_2_char(name));
+    return map_int.get(name);
 }
 
 bool JohnsSpecialEasyTransfer::get_bool(String name)
 {
-    return map_bool.getValueOf(str_2_char(name));
+    return map_bool.get(name);
 }
 
 
@@ -301,16 +286,15 @@ void JohnsSpecialEasyTransfer::update()
                 {
                     name += recieved.name_buf[i];
                 }
-
+				
+				// recieved int
                 if(recieved.type_char == type_chars._int)
                 {
-                    int idx = map_bool.getIndexOf(str_2_char(name));
-                    if(idx < 255)
+                    if(map_int.has_key(name))
                     {
-                        println_int_debug("idx", idx);
                         // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
                         int val = recieved.val[0] | (int)recieved.val[0] << 8;
-                        map_bool[idx](str_2_char(name), val);
+                        map_int.update(name, val);
                         println_string_debug(String("updated"));
                     }
                     else
@@ -318,13 +302,12 @@ void JohnsSpecialEasyTransfer::update()
                         println_string_debug(String("no update"));
                     }
                 }
+                // recieved 
                 else if(recieved.type_char == type_chars._uint8)
                 {
-                    int idx = map_uint8_t.getIndexOf(str_2_char(name));
-                    if(idx < 255)
+                    if(map_uint8_t.has_key(name))
                     {
-                        println_int_debug("idx", idx);
-                        map_bool[idx](str_2_char(name), recieved.val[0]);
+                        map_uint8_t.update(name, (uint8_t)recieved.val[0]);
                         println_string_debug(String("updated"));
                     }
                     else
@@ -334,12 +317,9 @@ void JohnsSpecialEasyTransfer::update()
                 }
                 else if(recieved.type_char == type_chars._bool)
                 {
-                    int idx = map_bool.getIndexOf(str_2_char(name));
-                    if(idx < 255)
+                    if(map_bool.has_key(name))
                     {
-                        println_int_debug("idx", idx);
-                        bool val = (bool)recieved.val[0];
-                        map_bool[idx](str_2_char(name), val);
+                        map_bool.update(name, (bool)recieved.val[0]);
                         println_string_debug(String("updated"));
                     }
                     else
@@ -351,8 +331,8 @@ void JohnsSpecialEasyTransfer::update()
             }
             else
             {
-				println_string_debug(String("failed: at end of msg before name is read"));
-				transfer_phase = TRANSFER_FAILED;
+                println_string_debug(String("failed: at end of msg before name is read"));
+                transfer_phase = TRANSFER_FAILED;
             }
         }
     }
@@ -395,6 +375,7 @@ void JohnsSpecialEasyTransfer::println_int_debug(String name, int val)
 
     }
 }
+
 void JohnsSpecialEasyTransfer::print_debug_buffer(char buffer[])
 {
     if (debug_enabled)
@@ -407,6 +388,13 @@ void JohnsSpecialEasyTransfer::print_debug_buffer(char buffer[])
             i++;
         }
     }
+}
+
+void JohnsSpecialEasyTransfer::debug_maps()
+{
+    //map_uint8_t.debug();
+    //map_int.debug();
+    //map_bool.debug();
 }
 
 /*

@@ -251,7 +251,7 @@ void JohnsSpecialEasyTransfer::update()
                     recieved.name_idx = 0;
                     transfer_phase = READING_NAME;
                 }
-
+                
             }
             else if (transfer_phase ==  READING_NAME)
             {
@@ -335,7 +335,7 @@ void JohnsSpecialEasyTransfer::update()
                         println_string_debug(String("no update"));
                     }
                 }
-                transfer_phase = TRANSFER_FAILED;
+				transfer_phase = TRANSFER_FAILED;
             }
             else
             {

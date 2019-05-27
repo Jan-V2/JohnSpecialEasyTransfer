@@ -12,6 +12,7 @@ api_methods:
     ✔ update(); @done(2019-05-27 10:31) @project(api_methods)
 optioneel:
     ☐ een manier bedenken waarop je de groote van de arrays in de arduino code can specificeren.
+    ✔ ervoor zorgen dat als een waarde niet bestaat je zeker weten 0 krijgt. @done(2019-05-27 11:28) @project(optioneel)
 
 stappen:
     - vanuit sender verstuur je vars met namen

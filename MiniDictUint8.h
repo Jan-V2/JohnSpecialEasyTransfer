@@ -33,6 +33,7 @@ public:
                 return data[i];
             }
         }
+        return 0;
     }
 
 

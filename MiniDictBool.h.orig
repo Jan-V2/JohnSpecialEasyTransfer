@@ -1,6 +1,6 @@
 
-#ifndef minidict
-#define minidict
+#ifndef minidictbool
+#define minidictbool
 
 #if ARDUINO > 22
 #include "Arduino.h"
@@ -8,24 +8,18 @@
 #include "WProgram.h"
 #endif
 
-
-template <typename T>
-
+#define BOOL_SIZE 50
 
 
-class MiniDict
+
+class MiniDictBool
 {
 public:
-    MiniDict() {}
+    MiniDictBool() {}
 
-    MiniDict(uint8_t _size)
-    {
-        size = _size;
-        data[_size];
-        keys[_size];
-    }
 
-    T get(String key)
+
+    bool get(String key)
     {
         for (int i=0; i < idx; i++)
         {
@@ -47,17 +41,13 @@ public:
         return false;
     }
 
-    bool add(String key, T item)
+    bool add(String key, bool item)
     {
         if(idx+1 < size)
         {
-			Serial.println("test");
             keys[idx] = key;
-            Serial.println("tessdft");
             data[idx] = item;
-            Serial.println("tesasdfat");
             idx++;
-            Serial.println("tesasdfaasdt");
             return true;
         }
         else
@@ -66,12 +56,12 @@ public:
         }
     }
 
-    bool update(String key, T d)
+    bool update(String key, bool d)
     {
 		int _idx = find_key(key);
-        if(idx > -1)
+        if(_idx > -1)
         {
-            data[idx] = d;
+            data[_idx] = d;
             return true;
 
         }
@@ -84,9 +74,9 @@ public:
     }
 
 private:
-    T data[];
-    String keys[];
-    int size;
+    bool data[BOOL_SIZE];
+    String keys[BOOL_SIZE];
+    int size = BOOL_SIZE;
     int idx = 0;
 
     int find_key(String key)

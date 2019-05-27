@@ -51,7 +51,7 @@ public:
     {
         if(idx+1 < size)
         {
-			Serial.println("test");
+            Serial.println("test");
             keys[idx] = key;
             Serial.println("tessdft");
             data[idx] = item;
@@ -68,7 +68,7 @@ public:
 
     bool update(String key, T d)
     {
-		int _idx = find_key(key);
+        int _idx = find_key(key);
         if(idx > -1)
         {
             data[idx] = d;

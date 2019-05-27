@@ -9,7 +9,7 @@
 #endif
 
 
-#define UINIT8_SIZE 50
+#define UINIT8_SIZE 10
 
 
 class MiniDictUint8
@@ -34,7 +34,6 @@ public:
             }
         }
     }
-
 
 
     bool has_key(String key)
@@ -63,10 +62,10 @@ public:
 
     bool update(String key, uint8_t d)
     {
-		int _idx = find_key(key);
-        if(idx > -1)
+        int _idx = find_key(key);
+        if(_idx > -1)
         {
-            data[idx] = d;
+            data[_idx] = d;
             return true;
 
         }

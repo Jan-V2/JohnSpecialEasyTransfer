@@ -9,7 +9,7 @@
 #endif
 
 
-#define INT_SIZE 50
+#define INT_SIZE 10
 
 
 
@@ -64,10 +64,10 @@ public:
 
     bool update(String key, int d)
     {
-		int _idx = find_key(key);
-        if(idx > -1)
+        int _idx = find_key(key);
+        if(_idx > -1)
         {
-            data[idx] = d;
+            data[_idx] = d;
             return true;
 
         }

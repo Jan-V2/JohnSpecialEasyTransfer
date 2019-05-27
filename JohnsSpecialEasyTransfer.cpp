@@ -5,7 +5,7 @@
  * als deze functie een tweede keer gecalled word word die call genegeerd
  */
 
-void JohnsSpecialEasyTransfer::begin(Stream *stream, uint8_t uint8_size, uint8_t int_size, uint8_t bool_size, Stream *debug_out = NULL)
+void JohnsSpecialEasyTransfer::begin(Stream *stream, Stream *debug_out = NULL)
 {
     if(!did_init)
     {
@@ -21,8 +21,8 @@ void JohnsSpecialEasyTransfer::begin(Stream *stream, uint8_t uint8_size, uint8_t
 
         _stream = stream;
 
-        map_uint8_t = MiniDictUint8( uint8_size );
-        map_int = MiniDictInt(  int_size );
+        map_uint8_t = MiniDictUint8(  );
+        map_int = MiniDictInt( );
         map_bool = MiniDictBool( );
 
         did_init = true;
@@ -66,7 +66,7 @@ bool JohnsSpecialEasyTransfer::add_recieve_int(String name, int default_value = 
 
 void JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value = false)
 {
-	println_int_debug("bulubby", map_bool.spots_remaining());
+    println_int_debug("bulubby", map_bool.spots_remaining());
     if(map_bool.spots_remaining() > 0)
     {
         map_bool.add(name, default_value);
@@ -122,6 +122,7 @@ void JohnsSpecialEasyTransfer::send_int(String name, int value)
     _stream->write(msg_len);
     _stream->write(type_chars._int);
     _stream->write(value);
+    _stream->write((value >> 8));
     send_name(name);
 }
 
@@ -166,7 +167,8 @@ void JohnsSpecialEasyTransfer::update()
     {
         if (transfer_phase ==  READING_HEADER1)
         {
-            if(_stream->read() == HEADER_1)
+            uint8_t b = _stream->read();
+            if((b) == HEADER_1)
             {
                 // als header byte gevonden next phase
                 println_string_debug(String("header1"));
@@ -175,6 +177,7 @@ void JohnsSpecialEasyTransfer::update()
             else
             {
                 // als header bytes niet gevonden trash buffer todat je 'm wel vind
+                println_string_debug(String((char)b));
                 transfer_phase = TRANSFER_FAILED;
                 debug.trashed_bytes++;
             }
@@ -239,24 +242,23 @@ void JohnsSpecialEasyTransfer::update()
             {
                 // leest de waarde uit de byte stream
                 println_string_debug(String("val"));
-                recieved.val[recieved.val_idx] = _stream->available();
-                if(recieved.val_idx < recieved.type_len - 1)
-                {
-                    recieved.val_idx++;
-                }
-                else
+                recieved.val[recieved.val_idx] = _stream->read();
+                recieved.val_idx++;
+                recieved.data_idx++;
+                if(!(recieved.val_idx < recieved.type_len ))
                 {
                     recieved.val_idx = 0;
                     recieved.name_idx = 0;
                     transfer_phase = READING_NAME;
                 }
-                recieved.data_idx++;
+                
             }
             else if (transfer_phase ==  READING_NAME)
             {
                 // leest de naam uit de byte stream
-                println_string_debug(String("name"));
-                recieved.name_buf[recieved.name_idx] = _stream->available();
+                recieved.name_buf[recieved.name_idx] = _stream->read();
+                println_int_debug(String("name"), recieved.name_buf[recieved.name_idx]);
+
                 recieved.name_idx++;
                 recieved.data_idx++;
             }
@@ -270,7 +272,12 @@ void JohnsSpecialEasyTransfer::update()
             // als de transfer mislukt
             println_string_debug(String("failed"));
             debug.failed_transfers++;
+            recieved.data_len = 0;
+            recieved.type_len = 0;
+            recieved.name_len = 0;
+            recieved.name_idx = 0;
             recieved.data_idx = 0;
+            recieved.val_idx = 0;
             transfer_phase = READING_HEADER1;
         }
         else
@@ -286,29 +293,30 @@ void JohnsSpecialEasyTransfer::update()
                 {
                     name += recieved.name_buf[i];
                 }
-				
-				// recieved int
+
+                // recieved int
                 if(recieved.type_char == type_chars._int)
                 {
-                    if(map_int.has_key(name))
+                    if(true)
                     {
                         // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
-                        int val = recieved.val[0] | (int)recieved.val[0] << 8;
+                        int val = recieved.val[0] | (int)recieved.val[1] << 8;
                         map_int.update(name, val);
-                        println_string_debug(String("updated"));
+                        println_string_debug(String("updated:")+ name);
                     }
                     else
                     {
                         println_string_debug(String("no update"));
                     }
                 }
-                // recieved 
+                // recieved
                 else if(recieved.type_char == type_chars._uint8)
                 {
-                    if(map_uint8_t.has_key(name))
+                    if(true)
                     {
+
                         map_uint8_t.update(name, (uint8_t)recieved.val[0]);
-                        println_string_debug(String("updated"));
+                        println_string_debug(String("updated:" )+ name);
                     }
                     else
                     {
@@ -317,17 +325,17 @@ void JohnsSpecialEasyTransfer::update()
                 }
                 else if(recieved.type_char == type_chars._bool)
                 {
-                    if(map_bool.has_key(name))
+                    if(true)
                     {
                         map_bool.update(name, (bool)recieved.val[0]);
-                        println_string_debug(String("updated"));
+                        println_string_debug(String("updated:" ) + name);
                     }
                     else
                     {
                         println_string_debug(String("no update"));
                     }
                 }
-                transfer_phase = READING_HEADER1;
+				transfer_phase = TRANSFER_FAILED;
             }
             else
             {

@@ -8,7 +8,7 @@
 #include "WProgram.h"
 #endif
 
-#define BOOL_SIZE 50
+#define BOOL_SIZE 10
 
 
 
@@ -58,10 +58,10 @@ public:
 
     bool update(String key, bool d)
     {
-		int _idx = find_key(key);
-        if(idx > -1)
+        int _idx = find_key(key);
+        if(_idx > -1)
         {
-            data[idx] = d;
+            data[_idx] = d;
             return true;
 
         }

@@ -40,7 +40,7 @@ const uint8_t HEADER_1 = 140;
 const uint8_t HEADER_2 = 156;
 const uint8_t NAME_MAX_LEN = 32;
 
-const bool debug_enabled = true;
+const bool debug_enabled = false;
 
 enum Transfer_Phase
 {
@@ -57,7 +57,7 @@ class JohnsSpecialEasyTransfer
 {
 public:
     JohnsSpecialEasyTransfer() {}
-    void begin(Stream *stream, uint8_t uint8_size, uint8_t int_size, uint8_t bool_size, Stream *debug_out = NULL);
+    void begin(Stream *stream, Stream *debug_out = NULL);
 
     // met deze methods voeg je vars toe aan de hasmaps
     // true if success false if geen ruimte meer

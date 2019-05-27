@@ -13,7 +13,6 @@
 #include "WProgram.h"
 #endif
 #include "Stream.h"
-#include <HashMap.h>
 #include "MiniDict.h"
 #include "MiniDictBool.h"
 #include "MiniDictInt.h"
@@ -108,8 +107,8 @@ private:
 
     void send_name(String name);
     void init_send();
-
-    char* str_2_char(String str);
+	
+	char* str_2_char(String str);
     void println_int_debug(String name, int val);
     void println_string_debug(String str);
     void print_debug_buffer(char buffer[]);

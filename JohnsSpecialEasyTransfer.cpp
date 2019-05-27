@@ -229,8 +229,17 @@ void JohnsSpecialEasyTransfer::update()
                         recieved.type_len = SIZE_BOOL;
                     }
                     recieved.name_len = recieved.data_len - recieved.type_len - TYPE_MARKER_SIZE;
-                    transfer_phase = READING_VAL;
-                    recieved.data_idx++;
+                    
+                    if (recieved.name_len <= NAME_MAX_LEN)
+                    {
+						transfer_phase = READING_VAL;
+						recieved.data_idx++;
+					}
+					else
+					{
+						// als de naam te lang is lijd dat tot een buffer overflow
+						transfer_phase = TRANSFER_FAILED;
+					}
                 }
                 else
                 {

@@ -1,13 +1,17 @@
 api_methods:
-    ☐ setup(&Stream stream, int groote)
-    ☐ setup(&Stream stream, int groote, &Stream debug_output)
-    ☐ recieve_[datatype](String name, [datatype] default waarde)
-    ☐ send_[datatype]([datatype])
+    ✔ setup(&Stream stream, int groote) @done(2019-05-27 10:29) @project(api_methods)
+    ✔ setup(&Stream stream, int groote, &Stream debug_output) @done(2019-05-27 10:29) @project(api_methods)
+        bij de setup kan niet meer de groote worden aangegeven want anders moet ik handmatig dat geheugen 
+        managen en dan kan ik momenteel gewoon niet.
+    ✔ recieve_[datatype](String name, [datatype] default waarde) @done(2019-05-27 10:31) @project(api_methods)
+    ✔ send_[datatype]([datatype]) @done(2019-05-27 10:31) @project(api_methods)
         datatypes:
-            ☐ uint_8(byte)
-            ☐ int16_t
-            ☐ int32_t
-    ☐ update();
+            ✔ uint_8(byte) @done(2019-05-27 10:31) @project(api_methods / datatypes)
+            ✔ int16_t(int) @done(2019-05-27 10:31) @project(api_methods / datatypes)
+            ✔ bool @done(2019-05-27 10:31) @project(api_methods / datatypes)
+    ✔ update(); @done(2019-05-27 10:31) @project(api_methods)
+optioneel:
+    ☐ een manier bedenken waarop je de groote van de arrays in de arduino code can specificeren.
 
 stappen:
     - vanuit sender verstuur je vars met namen
@@ -18,7 +22,9 @@ stappen:
 
 beschrijving protocol:
     [headerbyte1][headerbyte2][de len van het bericht na deze byte][type_marker][waarde als bytes][naam]
-2+1+1+1+7
+
+
+
 de api werkt als volgt
 
 //ontvanger

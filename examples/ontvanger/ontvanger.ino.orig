@@ -1,0 +1,49 @@
+//idp code
+//motoraansturing en bluetooth ontvanger
+
+//adres van de slave: 98d3:31:fd1781
+
+//liberarys
+
+//info
+#define motor_out 3
+#define motor_linksom 8
+#define motor_rechtsom 9
+
+String read_buffer = "";
+const int buffer_size = 10;
+const char cmd_sep = '|';
+const HardwareSerial*recieve_serial;
+
+
+void setup() {
+    Serial.begin(38400);
+    Serial1.begin(38400);
+    //TCCR2B = TCCR2B & B11111000 | B00000010; // for PWM frequency of 3921.16 Hz // alleen pin 3 en 4
+    recieve_serial = &Serial1;
+}
+
+void loop() {
+
+}
+
+String get_command(){
+	    if (recieve_serial->available() && read_buffer.length() < buffer_size ) {
+        char r_char = recieve_serial->read();  // pakt een char van de serial en plakt hem aan de buffer
+        read_buffer += r_char;
+        //recieve_serial->print(r_char);
+    } else if((read_buffer.length() >= buffer_size) || read_buffer.indexOf(cmd_sep) > 0) {
+        int cmd_sep_idx = read_buffer.indexOf(cmd_sep);
+        if(cmd_sep_idx > 0) {
+            // pakt commando en slices de buffer
+            String cmd = read_buffer.substring(0, cmd_sep_idx);
+            read_buffer = read_buffer.substring(cmd_sep_idx + 1);
+            //execute_command(cmd);
+        } else if (cmd_sep_idx == 0) {
+            read_buffer = read_buffer.substring(1);
+        } else {
+           // recieve_serial->println("recieved garbage clearing buffer");
+            read_buffer = "";
+        }
+    }
+}

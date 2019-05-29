@@ -8,7 +8,7 @@
 #include "WProgram.h"
 #endif
 
-#define BOOL_SIZE 0
+#define BOOL_SIZE 5
 
 
 

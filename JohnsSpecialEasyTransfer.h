@@ -41,7 +41,7 @@ const uint8_t HEADER_1 = 140;
 const uint8_t HEADER_2 = 156;
 const uint8_t NAME_MAX_LEN = 32;
 
-const bool debug_enabled = false;
+const bool debug_enabled = true;
 
 enum Transfer_Phase
 {

@@ -25,7 +25,7 @@ public:
         keys[_size];
     }
 
-    int get(String key)
+    long get(String key)
     {
         for (int i=0; i < idx; i++)
         {

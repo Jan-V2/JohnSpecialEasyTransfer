@@ -9,7 +9,7 @@
 #endif
 
 
-#define UINIT8_SIZE 0
+#define UINIT8_SIZE 5
 
 
 class MiniDictUint8

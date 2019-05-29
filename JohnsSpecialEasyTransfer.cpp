@@ -79,7 +79,7 @@ bool JohnsSpecialEasyTransfer::add_recieve_long(String name, long default_value 
 
 bool JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value = false)
 {
-    if(map_int.spots_remaining() > 0)
+    if(map_bool.spots_remaining() > 0)
     {
         map_bool.add(name, default_value);
         return true;
@@ -305,7 +305,7 @@ void JohnsSpecialEasyTransfer::update()
             {
                 // leest de naam uit de byte stream
                 recieved.name_buf[recieved.name_idx] = _stream->read();
-                println_int_debug(String("name"), recieved.name_buf[recieved.name_idx]);
+                println_int_debug(String("name"), (char)recieved.name_buf[recieved.name_idx]);
 
                 recieved.name_idx++;
                 recieved.data_idx++;
@@ -345,7 +345,7 @@ void JohnsSpecialEasyTransfer::update()
                 // recieved int
                 if(recieved.type_char == type_chars._int)
                 {
-                    if(true)
+                    if(true)// todo maak hier echte check van
                     {
                         // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
                         int val = recieved.val[0] | (int)recieved.val[1] << 8;
@@ -362,8 +362,10 @@ void JohnsSpecialEasyTransfer::update()
                     if(true)
                     {
                         // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
-                        long val = recieved.val[0] | (long)recieved.val[1] << 8 | (long)recieved.val[1] << 16 | (long)recieved.val[1] << 24;
-                        map_int.update(name, val);
+                        long val = recieved.val[0] | (long)recieved.val[1] << 8 | (long)recieved.val[2] << 16 | (long)recieved.val[3] << 24;
+
+                        
+                        map_long.update(name, val);
                         println_string_debug(String("updated:")+ name);
                     }
                     else

@@ -24,7 +24,7 @@ void JohnsSpecialEasyTransfer::begin(Stream *stream, Stream *debug_out = NULL)
         map_uint8_t = MiniDictUint8(  );
         map_int = MiniDictInt( );
         map_bool = MiniDictBool( );
-
+		map_long = MiniDictLong();
         did_init = true;
     }
 
@@ -64,14 +64,30 @@ bool JohnsSpecialEasyTransfer::add_recieve_int(String name, int default_value = 
     }
 }
 
-void JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value = false)
+bool JohnsSpecialEasyTransfer::add_recieve_long(String name, long default_value = 0)
 {
-    println_int_debug("bulubby", map_bool.spots_remaining());
-    if(map_bool.spots_remaining() > 0)
+    if(map_long.spots_remaining() > 0)
+    {
+        map_long.add(name, default_value);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool JohnsSpecialEasyTransfer::add_recieve_bool(String name, bool default_value = false)
+{
+    if(map_int.spots_remaining() > 0)
     {
         map_bool.add(name, default_value);
+        return true;
     }
-
+    else
+    {
+        return false;
+    }
 }
 
 
@@ -87,6 +103,11 @@ uint8_t JohnsSpecialEasyTransfer::get_uint8(String name)
 int JohnsSpecialEasyTransfer::get_int(String name)
 {
     return map_int.get(name);
+}
+
+long JohnsSpecialEasyTransfer::get_long(String name)
+{
+    return map_long.get(name);
 }
 
 bool JohnsSpecialEasyTransfer::get_bool(String name)
@@ -123,6 +144,19 @@ void JohnsSpecialEasyTransfer::send_int(String name, int value)
     _stream->write(type_chars._int);
     _stream->write(value);
     _stream->write((value >> 8));
+    send_name(name);
+}
+
+void JohnsSpecialEasyTransfer::send_long(String name, long value)
+{
+    init_send();
+    uint8_t msg_len = name.length() + SIZE_LONG + TYPE_MARKER_SIZE;
+    _stream->write(msg_len);
+    _stream->write(type_chars._long);
+    _stream->write(value);
+    _stream->write((value >> 8));
+    _stream->write((value >> 16));
+    _stream->write((value >> 24));
     send_name(name);
 }
 
@@ -213,7 +247,8 @@ void JohnsSpecialEasyTransfer::update()
                 // als de byte valide is word de size ervan gepakt.
                 println_string_debug(String("type"));
                 char type = (char)_stream->read();
-                if (type == type_chars._uint8 || type == type_chars._int || type == type_chars._bool)
+                if (type == type_chars._uint8 || type == type_chars._int 
+					|| type == type_chars._bool || type == type_chars._long)
                 {
                     recieved.type_char = type;
                     if(type == type_chars._int)
@@ -227,6 +262,10 @@ void JohnsSpecialEasyTransfer::update()
                     else if(type == type_chars._bool)
                     {
                         recieved.type_len = SIZE_BOOL;
+                    }
+                    else if(type == type_chars._long)
+                    {
+                        recieved.type_len = SIZE_LONG;
                     }
                     recieved.name_len = recieved.data_len - recieved.type_len - TYPE_MARKER_SIZE;
                     
@@ -310,6 +349,20 @@ void JohnsSpecialEasyTransfer::update()
                     {
                         // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
                         int val = recieved.val[0] | (int)recieved.val[1] << 8;
+                        map_int.update(name, val);
+                        println_string_debug(String("updated:")+ name);
+                    }
+                    else
+                    {
+                        println_string_debug(String("no update"));
+                    }
+                }
+                else if(recieved.type_char == type_chars._long)
+                {
+                    if(true)
+                    {
+                        // plakt de twee byte aan elkaar zodat je een 16 bit int krijgt
+                        long val = recieved.val[0] | (long)recieved.val[1] << 8 | (long)recieved.val[1] << 16 | (long)recieved.val[1] << 24;
                         map_int.update(name, val);
                         println_string_debug(String("updated:")+ name);
                     }

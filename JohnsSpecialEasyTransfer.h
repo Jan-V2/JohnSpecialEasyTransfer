@@ -17,6 +17,7 @@
 #include "MiniDictBool.h"
 #include "MiniDictInt.h"
 #include "MiniDictUint8.h"
+#include "MiniDictLong.h"
 
 //#include <NewSoftSerial.h>
 //#include <math.h>
@@ -28,6 +29,7 @@
 
 const int SIZE_UINT8_T = 1;
 const int SIZE_INT = 2;
+const int SIZE_LONG = 4;
 const int SIZE_BOOL = 1;
 const int TYPE_MARKER_SIZE = 1;
 
@@ -62,7 +64,7 @@ public:
     // true if success false if geen ruimte meer
     bool add_recieve_uint8(String name, uint8_t default_value = 0);
     bool add_recieve_int(String name, int default_value = 0);
-    void add_recieve_bool(String name, bool default_value = false);
+    bool add_recieve_bool(String name, bool default_value = false);
 
     // om waardes uit de maps te halen null als waarde niet in de maps zit
     uint8_t get_uint8(String name);
@@ -97,7 +99,7 @@ private:
     MiniDictUint8 map_uint8_t;
     MiniDictInt map_int;
     MiniDictBool map_bool;
-
+	MiniDictLong map_long;
 
     Transfer_Phase transfer_phase = READING_HEADER1;
 

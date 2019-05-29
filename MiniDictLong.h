@@ -1,6 +1,6 @@
 
-#ifndef minidictint
-#define minidictint
+#ifndef minidictlong
+#define minidictlong
 
 #if ARDUINO > 22
 #include "Arduino.h"
@@ -9,16 +9,16 @@
 #endif
 
 
-#define INT_SIZE 5
+#define LONG_SIZE 5
 
 
 
-class MiniDictInt
+class MiniDictLong
 {
 public:
-    MiniDictInt() {}
+    MiniDictLong() {}
 
-    MiniDictInt(uint8_t _size)
+    MiniDictLong(uint8_t _size)
     {
         size = _size;
         data[_size];
@@ -48,7 +48,7 @@ public:
         return false;
     }
 
-    bool add(String key, int item)
+    bool add(String key, long item)
     {
         if(idx+1 < size)
         {
@@ -63,7 +63,7 @@ public:
         }
     }
 
-    bool update(String key, int d)
+    bool update(String key, long d)
     {
         int _idx = find_key(key);
         if(_idx > -1)
@@ -81,9 +81,9 @@ public:
     }
 
 private:
-    int data[INT_SIZE];
-    String keys[INT_SIZE];
-    int size = INT_SIZE;
+    long data[LONG_SIZE];
+    String keys[LONG_SIZE];
+    int size = LONG_SIZE;
     int idx = 0;
 
     int find_key(String key)

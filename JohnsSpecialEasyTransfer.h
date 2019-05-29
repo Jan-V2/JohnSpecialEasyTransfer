@@ -121,7 +121,7 @@ private:
         uint8_t name_idx = 0;
         uint8_t data_idx = 0;
         uint8_t val_idx = 0;
-        uint8_t val[2];
+        uint8_t val[4];
         char type_char;
         char name_buf[NAME_MAX_LEN];
     } recieved;
@@ -131,6 +131,7 @@ private:
         char _uint8 = 'u';
         char _bool = 'b';
         char _int = 'i';
+        char _long = 'l';
     } type_chars;
 };
 

@@ -65,16 +65,19 @@ public:
     bool add_recieve_uint8(String name, uint8_t default_value = 0);
     bool add_recieve_int(String name, int default_value = 0);
     bool add_recieve_bool(String name, bool default_value = false);
+    bool add_recieve_long(String name, long default_value = 0);
 
     // om waardes uit de maps te halen null als waarde niet in de maps zit
     uint8_t get_uint8(String name);
     int get_int(String name);
     bool get_bool(String name);
+    long get_long(String name);
 
     // om waardes te versuren
     void send_uint8(String name, uint8_t value);
     void send_int(String name, int value);
     void send_bool(String name, bool);
+    void send_long(String name, long value);
 
     // leest de serial uit en update de waardes
     void update();
